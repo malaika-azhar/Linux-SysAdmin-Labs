@@ -29,14 +29,17 @@ The method: set up test data, back it up, verify the backup, break the system, r
 3. [Environment](#environment)
 4. [Tools & Technologies](#tools)
 5. [The Lab Flow](#flow)
-6. [Steps](#steps)
-7. [Results](#results)
-8. [Command Cheat Sheet](#cheat-sheet)
-9. [Challenges & Fixes](#problems-fixes)
-10. [Scope & Limitations](#scope-limitations)
-11. [What I Learned](#what-i-learned)
-12. [Skills Demonstrated](#skills-demonstrated)
-13. [Folder Structure](#folder-structure)
+6. [Which Step Do I Need?](#which-step)
+7. [Steps](#steps)
+8. [Results](#results)
+9. [Where a Backup Can Break](#backup-breaks)
+10. [Backup Method Pipeline](#pipeline)
+11. [Command Cheat Sheet](#cheat-sheet)
+12. [Challenges & Fixes](#problems-fixes)
+13. [Scope & Limitations](#scope-limitations)
+14. [What I Learned](#what-i-learned)
+15. [Skills Demonstrated](#skills-demonstrated)
+16. [Folder Structure](#folder-structure)
 
 ---
 
@@ -58,6 +61,78 @@ Show that I can protect a small web server and recover it after data loss.
 - Prove the backup files are not damaged by checking SHA-256 checksums.
 - Schedule the script with cron.
 - Delete the live data, then restore it from the backup and confirm it is back.
+
+<div align="center">
+
+### 🧩 Lab Workflow at a Glance
+
+<table>
+<tr>
+<td align="center" valign="top" width="18%">
+
+**🧪 Prepare**<br>
+<sub>Test web page<br>and database</sub>
+
+</td>
+<td align="center" valign="middle" width="2.5%">
+
+**➜**
+
+</td>
+<td align="center" valign="top" width="18%">
+
+**💾 Back up**<br>
+<sub>One script,<br>3 files</sub>
+
+</td>
+<td align="center" valign="middle" width="2.5%">
+
+**➜**
+
+</td>
+<td align="center" valign="top" width="18%">
+
+**🔐 Verify**<br>
+<sub>Check the<br>checksums</sub>
+
+</td>
+<td align="center" valign="middle" width="2.5%">
+
+**➜**
+
+</td>
+<td align="center" valign="top" width="18%">
+
+**💥 Destroy**<br>
+<sub>Delete the<br>live data</sub>
+
+</td>
+<td align="center" valign="middle" width="2.5%">
+
+**➜**
+
+</td>
+<td align="center" valign="top" width="18%">
+
+**♻️ Restore**<br>
+<sub>Bring the data<br>back and confirm</sub>
+
+</td>
+</tr>
+<tr>
+<td colspan="9" align="center">
+
+![tar](https://img.shields.io/badge/tar-1A5276?style=for-the-badge)
+![mysqldump](https://img.shields.io/badge/mysqldump-117864?style=for-the-badge)
+![sha256sum](https://img.shields.io/badge/sha256sum-76448A?style=for-the-badge)
+![crontab](https://img.shields.io/badge/crontab-B9770E?style=for-the-badge)<br>
+<sub>Built-in Linux tools, no paid software</sub>
+
+</td>
+</tr>
+</table>
+
+</div>
 
 ---
 
@@ -101,13 +176,60 @@ Show that I can protect a small web server and recover it after data loss.
 
 ```mermaid
 flowchart LR
-    A["🧪 Test data<br/>web page + database"] --> B["📜 Backup script<br/>backup.sh"]
-    B --> C["▶️ Run backup<br/>3 files created"]
-    C --> D["🔐 Verify<br/>sha256sum -c"]
-    D --> E["⏰ Schedule<br/>cron 0 2 * * *"]
-    E --> F["💥 Destroy<br/>delete page + DB"]
-    F --> G["♻️ Restore<br/>tar + mysql"]
-    G --> H["✅ Verify<br/>data is back"]
+    subgraph G1["🟣 PREPARE"]
+        direction TB
+        A1["Test data<br/>web page + database"]
+        A2["Backup script<br/>backup.sh"]
+    end
+    subgraph G2["🔵 PROTECT"]
+        direction TB
+        B1["Run backup<br/>3 files created"]
+        B2["Verify<br/>sha256sum -c"]
+        B3["Schedule<br/>cron at 02:00"]
+    end
+    subgraph G3["🟠 DISASTER"]
+        direction TB
+        C1["Destroy<br/>delete page + database"]
+    end
+    subgraph G4["🟢 RECOVER"]
+        direction TB
+        D1["Restore<br/>tar + mysql"]
+        D2["Verify<br/>data is back"]
+    end
+    G1 ==> G2 ==> G3 ==> G4
+
+    classDef pr fill:#f0eaf8,stroke:#6f42c1,stroke-width:2px,color:#000
+    classDef po fill:#e8f1fb,stroke:#005EB8,stroke-width:2px,color:#000
+    classDef di fill:#fff4e5,stroke:#e08a00,stroke-width:2px,color:#000
+    classDef re fill:#eef7ee,stroke:#2ea44f,stroke-width:2px,color:#000
+    class A1,A2 pr
+    class B1,B2,B3 po
+    class C1 di
+    class D1,D2 re
+```
+
+<p align="center"><em>The groups show the four stages of the lab, from preparing the data to confirming the restore.</em></p>
+
+---
+
+<a id="which-step"></a>
+## 🧭 Which Step Do I Need?
+
+```mermaid
+flowchart TD
+    Start(["🎯 What do you need to do?"]):::start
+    Start --> A["Keep a copy of the<br/>web page and database"]:::q
+    Start --> B["Check the backup<br/>is not damaged"]:::q
+    Start --> C["Run the backup every day<br/>without doing it by hand"]:::q
+    Start --> D["Data was deleted<br/>or lost"]:::q
+    A --> S1(["Backup script<br/>Step 5"]):::s
+    B --> S2(["Checksum check<br/>Step 6"]):::s
+    C --> S3(["Cron job<br/>Step 7"]):::s
+    D --> S4(["Restore<br/>Steps 8 and 9"]):::s
+
+    classDef start fill:#943126,stroke:#571C16,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef q fill:#1A5276,stroke:#0B2E43,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef s fill:#1E8449,stroke:#0E4A28,stroke-width:3px,color:#FFFFFF,font-weight:bold
 ```
 
 ---
@@ -273,6 +395,72 @@ The page shows `<h1>Backup Lab</h1>` and the table has all 3 rows again. End tim
 
 > [!NOTE]
 > The 2 min 47 s includes my own typing time and a very small data set (web archive 186 bytes, SQL dump 1,944 bytes). It is not a measure of how long a real restore would take.
+
+---
+
+<a id="backup-breaks"></a>
+## 🔍 Where a Backup Can Break
+
+```mermaid
+flowchart LR
+    A["💾 Live data<br/>web page + database"]:::a --> B["📜 Backup script<br/>tar + mysqldump"]:::b --> C["📁 Backup files<br/>stored on the same VM"]:::c --> D["🔐 Checksum<br/>files are intact"]:::d --> E["♻️ Restore test<br/>data comes back"]:::e
+
+    classDef a fill:#1A5276,stroke:#0B2E43,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef b fill:#76448A,stroke:#432752,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef c fill:#943126,stroke:#571C16,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef d fill:#B9770E,stroke:#6E4409,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef e fill:#1E8449,stroke:#0E4A28,stroke-width:3px,color:#FFFFFF,font-weight:bold
+```
+
+<p align="center"><em>The red box is the weak point in this lab: the backup sits on the same VM as the data it protects.</em></p>
+
+### 🔍 Analyst Note — Why the Restore Test Comes Last
+
+A checksum only proves the files were not changed. Only a restore proves the data comes back.
+
+```mermaid
+flowchart TD
+    A["🎯 Backup is made"]:::start --> B["🔐 Checksum check<br/>are the files intact"]:::work
+    B -->|OK| C["♻️ Restore test<br/>does the data come back"]:::work
+    B -->|Not OK| X["🔁 Make the backup again"]:::bad
+    C -->|Data is back| D["✅ Backup is proven"]:::good
+    C -->|Data is missing| E["🔎 Check the script and the files"]:::bad
+
+    classDef start fill:#e8f1fb,stroke:#005EB8,stroke-width:2px,color:#000
+    classDef work fill:#fff4e5,stroke:#e08a00,stroke-width:2px,color:#000
+    classDef good fill:#eef7ee,stroke:#2ea44f,stroke-width:2px,color:#000
+    classDef bad fill:#fdeaea,stroke:#C8102E,stroke-width:2px,color:#000
+```
+
+---
+
+<a id="pipeline"></a>
+## 🧭 Backup Method Pipeline
+
+How the lab turns a plain server into a backup that has been proven to work
+
+```mermaid
+flowchart TB
+    Pre["🧪 PREPARE<br/>Create the test data"]:::symClass
+    Scr["📜 SCRIPT<br/>Write backup.sh"]:::isoClass
+    Bak["💾 BACK UP<br/>Run it, get 3 files"]:::decClass
+    Ver["🔐 VERIFY<br/>Check the checksums"]:::fixClass
+    Sch["⏰ SCHEDULE<br/>Add the cron job"]:::verClass
+    Res["♻️ RESTORE<br/>Destroy, then recover"]:::repClass
+    Doc["📝 DOCUMENT<br/>Commands, times, screenshots"]:::docClass
+
+    Pre --> Scr --> Bak --> Ver --> Sch --> Res --> Doc
+
+    classDef symClass fill:#2C3E70,stroke:#131B3A,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
+    classDef isoClass fill:#1A5276,stroke:#0B2E43,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
+    classDef decClass fill:#76448A,stroke:#432752,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
+    classDef fixClass fill:#B9770E,stroke:#6E4409,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
+    classDef verClass fill:#1E8449,stroke:#0E4A28,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
+    classDef repClass fill:#117864,stroke:#083D33,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
+    classDef docClass fill:#943126,stroke:#571C16,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
+
+    linkStyle default stroke:#2C3E70,stroke-width:4px
+```
 
 ---
 
