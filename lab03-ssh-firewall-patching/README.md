@@ -1,23 +1,23 @@
 <div align="center">
 
-# 🔐 Lab 03 — SSH Hardening, Firewall & Patching
+# 🛡️ Lab 03 — SSH Hardening, Firewall & Patching
 
-**Ubuntu 24.04 on Azure · sshd Settings · ufw Firewall · apt Patching · Reboot · Unattended Upgrades · fail2ban**
+**Ubuntu 24.04 on Azure · OpenSSH · ufw · apt Updates · unattended-upgrades · fail2ban**
 
-A hands-on Linux sysadmin lab. I took a snapshot of the VM, set up a `ufw` firewall, tightened the SSH settings, installed 73 pending updates, rebooted into a new kernel, turned on automatic security updates, and added `fail2ban` for SSH. After each change I checked that I could still log in and that the website still worked.
+A hands-on Linux sysadmin lab. I took a snapshot of the VM, turned on the ufw firewall with only the ports I need, tightened the SSH settings, installed the pending updates and rebooted into the new kernel, then turned on automatic updates and fail2ban.
 
 ![Linux](https://img.shields.io/badge/Linux-Ubuntu_24.04-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 ![Cloud](https://img.shields.io/badge/Cloud-Azure_VM-0078D6?style=for-the-badge&logo=microsoftazure&logoColor=white)
-![SSH](https://img.shields.io/badge/Access-SSH_Key_Login-1A5276?style=for-the-badge)
-![Firewall](https://img.shields.io/badge/Firewall-ufw-117864?style=for-the-badge)
+![Firewall](https://img.shields.io/badge/Firewall-ufw-E95420?style=for-the-badge)
+![SSH](https://img.shields.io/badge/SSH-OpenSSH_Key_Only-2C3E70?style=for-the-badge)
 ![Protection](https://img.shields.io/badge/Protection-fail2ban-943126?style=for-the-badge)
-![Patching](https://img.shields.io/badge/Patching-apt_%2B_Unattended_Upgrades-B9770E?style=for-the-badge)
+![Updates](https://img.shields.io/badge/Updates-apt_%2B_unattended--upgrades-1E8449?style=for-the-badge)
 ![Cost](https://img.shields.io/badge/Cost-Azure_Student_Credit-2ea44f?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Complete-brightgreen?style=for-the-badge)
 
-The method: take a snapshot, change one thing, test that access still works, and keep the evidence.
+The method: take a snapshot, keep a second SSH window open, change one thing at a time, test it, and keep the evidence.
 
-### [📸 Jump to the modules](#modules)  ·  [🗂 Screenshot index](INDEX.md)
+### [📸 Jump to the steps](#steps)
 
 </div>
 
@@ -30,10 +30,10 @@ The method: take a snapshot, change one thing, test that access still works, and
 3. [Environment](#environment)
 4. [Tools & Technologies](#tools)
 5. [The Lab Flow](#flow)
-6. [Which Module Do I Need?](#which-module)
-7. [Modules](#modules)
+6. [Which Step Do I Need?](#which-step)
+7. [Steps](#steps)
 8. [Results](#results)
-9. [Where a Lock-Out Can Happen](#lockout)
+9. [Where a Lockout Can Happen](#lockout)
 10. [Hardening Method Pipeline](#pipeline)
 11. [Command Cheat Sheet](#cheat-sheet)
 12. [Challenges & Fixes](#problems-fixes)
@@ -47,24 +47,22 @@ The method: take a snapshot, change one thing, test that access still works, and
 <a id="at-a-glance"></a>
 ## 📊 At a Glance
 
-| 🖥 Server | 📦 Pending Updates | 🧬 Kernel | 🛡 SSH Jail |
+| 🖥 Server | 🔥 Firewall | 📦 Updates | 🚫 fail2ban |
 |:---:|:---:|:---:|:---:|
-| **1 Ubuntu 24.04 VM** | **84 → 0** | **6.17.0-1022 → 7.0.0-1017** | **fail2ban `sshd`, 1 IP banned** |
+| **1 Ubuntu 24.04 VM** | **ufw active, ports 22, 80, 443** | **84 pending → 0 left, new kernel** | **1 jail (`sshd`), 1 IP banned** |
 
 ---
 
 <a id="objective"></a>
 ## 🎯 Objective
 
-Show that I can harden a small public Linux server without locking myself out of it.
+Show that I can make a small public server safer without locking myself out.
 
-- Take a disk snapshot before changing anything.
-- Turn on the `ufw` firewall with SSH, HTTP and HTTPS allowed.
-- Tighten the SSH settings (`PermitRootLogin no`, `MaxAuthTries 3`, `LoginGraceTime 30`) and check them with `sshd -T`.
-- Install all pending updates, reboot, and confirm the new kernel is running.
-- Turn on automatic security updates.
-- Install `fail2ban` and check the SSH jail.
-- After patching, confirm that the firewall, the services and the website still work.
+- Take a snapshot of the VM disk before changing anything.
+- Turn on the ufw firewall and allow only SSH, HTTP and HTTPS.
+- Tighten the SSH settings and check them after a restart.
+- Install the pending updates, reboot into the new kernel, and confirm the services still work.
+- Turn on automatic updates and fail2ban.
 
 <div align="center">
 
@@ -74,8 +72,8 @@ Show that I can harden a small public Linux server without locking myself out of
 <tr>
 <td align="center" valign="top" width="18%">
 
-**📸 Snapshot**<br>
-<sub>Save the disk<br>before changes</sub>
+**🧯 Prepare**<br>
+<sub>Snapshot and<br>second SSH window</sub>
 
 </td>
 <td align="center" valign="middle" width="2.5%">
@@ -85,8 +83,8 @@ Show that I can harden a small public Linux server without locking myself out of
 </td>
 <td align="center" valign="top" width="18%">
 
-**🧱 Harden**<br>
-<sub>ufw rules and<br>SSH settings</sub>
+**🔥 Firewall**<br>
+<sub>ufw with<br>22, 80, 443</sub>
 
 </td>
 <td align="center" valign="middle" width="2.5%">
@@ -96,8 +94,8 @@ Show that I can harden a small public Linux server without locking myself out of
 </td>
 <td align="center" valign="top" width="18%">
 
-**🩹 Patch**<br>
-<sub>apt upgrade<br>and reboot</sub>
+**🔐 Harden SSH**<br>
+<sub>Settings file,<br>test, restart</sub>
 
 </td>
 <td align="center" valign="middle" width="2.5%">
@@ -107,8 +105,8 @@ Show that I can harden a small public Linux server without locking myself out of
 </td>
 <td align="center" valign="top" width="18%">
 
-**🤖 Automate**<br>
-<sub>Automatic<br>security updates</sub>
+**📦 Patch**<br>
+<sub>Update, reboot,<br>check kernel</sub>
 
 </td>
 <td align="center" valign="middle" width="2.5%">
@@ -118,20 +116,20 @@ Show that I can harden a small public Linux server without locking myself out of
 </td>
 <td align="center" valign="top" width="18%">
 
-**🚫 Block**<br>
-<sub>fail2ban<br>for SSH</sub>
+**🚫 Protect**<br>
+<sub>Auto updates<br>and fail2ban</sub>
 
 </td>
 </tr>
 <tr>
 <td colspan="9" align="center">
 
-![ufw](https://img.shields.io/badge/ufw-117864?style=for-the-badge)
-![sshd](https://img.shields.io/badge/sshd_-T-1A5276?style=for-the-badge)
-![apt](https://img.shields.io/badge/apt-B9770E?style=for-the-badge)
-![unattended-upgrades](https://img.shields.io/badge/unattended--upgrades-76448A?style=for-the-badge)
+![ufw](https://img.shields.io/badge/ufw-E95420?style=for-the-badge)
+![sshd](https://img.shields.io/badge/sshd-2C3E70?style=for-the-badge)
+![apt](https://img.shields.io/badge/apt-1A5276?style=for-the-badge)
+![unattended-upgrades](https://img.shields.io/badge/unattended--upgrades-1E8449?style=for-the-badge)
 ![fail2ban](https://img.shields.io/badge/fail2ban-943126?style=for-the-badge)<br>
-<sub>Built-in Ubuntu tools and free packages, no paid software</sub>
+<sub>Standard Ubuntu tools, no paid software</sub>
 
 </td>
 </tr>
@@ -147,17 +145,18 @@ Show that I can harden a small public Linux server without locking myself out of
 | Item | Value |
 |---|---|
 | Cloud | Azure virtual machine, India South Central |
-| VM name / size | `lab-server` · Standard B2ls v2 (2 vCPU, 4 GiB) |
-| Disk | 30 GiB, Premium SSD LRS |
-| Operating system | Ubuntu 24.04.4 LTS before patching, 24.04.5 LTS after |
+| VM name / size | `lab-server` · Standard B2ls_v2 (2 vCPU, 4 GiB) |
+| Operating system | Ubuntu 24.04.4 LTS before patching, 24.04.5 LTS after the reboot |
 | Kernel | `6.17.0-1022-azure` before, `7.0.0-1017-azure` after |
-| Other services on the VM | Nginx, Apache and MySQL (from Lab 1 and Lab 2) |
-| Access | SSH with a key file from my Windows laptop, user `azureuser` |
-| Firewall (`ufw`) | Turned on in this lab |
+| Web servers | Nginx on 80 and 443, Apache on 8080 (set up in Lab 2) |
+| Database | MySQL 8.0 |
+| Access | SSH with a key file, user `azureuser` |
+| Firewall (`ufw`) | Inactive before this lab, active after Step 5 |
+| Azure network rules | SSH 22, HTTP 80, HTTPS 443 allowed. Not changed in this lab |
 | Date of lab | 13 Oct 2026 (VM clock is UTC) |
 
 > [!NOTE]
-> The subscription ID, account email and deployment correlation ID are blurred in the Azure screenshots.
+> Public IP details, subscription ID, account email and my own home IP address are blurred in the screenshots. The VM details are shown in Step 1.
 
 ---
 
@@ -166,15 +165,16 @@ Show that I can harden a small public Linux server without locking myself out of
 
 | Tool | Purpose |
 |------|---------|
-| `ssh` | Connect to the VM from my laptop with a key file |
+| Azure portal | Check the VM and create the disk snapshot |
+| `ssh` | Connect to the VM from my laptop |
+| `sshd -T`, `sshd -t` | Show the active SSH settings and test the config file |
 | `ufw` | Host firewall on the VM |
-| `sshd -t`, `sshd -T` | Test the SSH config and print the settings the server really uses |
-| `systemctl` | Restart SSH, check service status, enable services |
-| `apt list`, `apt update`, `apt upgrade` | See, refresh and install updates |
-| `reboot`, `uname -r` | Restart the VM and check the running kernel |
-| `unattended-upgrades` | Install security updates automatically |
-| `fail2ban-client` | Check the `sshd` jail and banned IPs |
-| Azure portal | Create the disk snapshot |
+| `apt` | List, download and install updates |
+| `uname -r` | Show the running kernel |
+| `systemctl` | Restart SSH, reboot checks, service status |
+| `unattended-upgrades` | Install updates automatically |
+| `fail2ban-client` | Check the fail2ban jail and banned IPs |
+| Web browser | Check that the website still opens after each change |
 
 ---
 
@@ -186,23 +186,21 @@ flowchart LR
     subgraph G1["🟣 PREPARE"]
         direction TB
         A1["Snapshot<br/>lab-server-before-lab3"]
-        A2["Baseline<br/>sshd -T before"]
+        A2["Second SSH window<br/>as a safety net"]
     end
-    subgraph G2["🔵 HARDEN"]
+    subgraph G2["🔵 PROTECT"]
         direction TB
-        B1["Firewall<br/>ufw 22, 80, 443"]
-        B2["SSH settings<br/>root off, 3 tries, 30 s"]
-        B3["Test login<br/>key still works"]
+        B1["ufw<br/>allow 22, 80, 443"]
+        B2["SSH hardening<br/>test, restart, re-login"]
     end
     subgraph G3["🟠 PATCH"]
         direction TB
-        C1["apt update + upgrade<br/>73 packages"]
+        C1["apt update<br/>and upgrade"]
         C2["Reboot<br/>new kernel"]
-        C3["Re-check<br/>ufw, services, website"]
     end
-    subgraph G4["🟢 PROTECT"]
+    subgraph G4["🟢 AUTOMATE"]
         direction TB
-        D1["Auto updates<br/>unattended-upgrades"]
+        D1["unattended-upgrades<br/>enabled"]
         D2["fail2ban<br/>sshd jail"]
     end
     G1 ==> G2 ==> G3 ==> G4
@@ -212,33 +210,33 @@ flowchart LR
     classDef di fill:#fff4e5,stroke:#e08a00,stroke-width:2px,color:#000
     classDef re fill:#eef7ee,stroke:#2ea44f,stroke-width:2px,color:#000
     class A1,A2 pr
-    class B1,B2,B3 po
-    class C1,C2,C3 di
+    class B1,B2 po
+    class C1,C2 di
     class D1,D2 re
 ```
 
-<p align="center"><em>The groups show the four stages of the lab, from preparing the VM to adding automatic protection.</em></p>
+<p align="center"><em>The groups show the four stages of the lab, from preparing a safety net to turning on automatic protection.</em></p>
 
 ---
 
-<a id="which-module"></a>
-## 🧭 Which Module Do I Need?
+<a id="which-step"></a>
+## 🧭 Which Step Do I Need?
 
 ```mermaid
 flowchart TD
     Start(["🎯 What do you need to do?"]):::start
-    Start --> A["Save the VM disk<br/>before changing it"]:::q
-    Start --> B["Open only the<br/>ports I need"]:::q
-    Start --> C["Make SSH stricter"]:::q
-    Start --> D["Install pending<br/>security updates"]:::q
-    Start --> E["Stop updates being<br/>forgotten"]:::q
-    Start --> F["Block repeated<br/>bad SSH logins"]:::q
-    A --> S1(["Snapshot<br/>Module 1"]):::s
-    B --> S2(["ufw firewall<br/>Module 3"]):::s
-    C --> S3(["SSH settings<br/>Modules 5 and 6"]):::s
-    D --> S4(["Patching<br/>Modules 7, 8 and 9"]):::s
-    E --> S5(["Automatic updates<br/>Module 10"]):::s
-    F --> S6(["fail2ban<br/>Module 11"]):::s
+    Start --> A["Be able to undo<br/>a bad change"]:::q
+    Start --> B["Close every port<br/>I do not need"]:::q
+    Start --> C["Stop root login<br/>and limit login tries"]:::q
+    Start --> D["Install security<br/>updates and a new kernel"]:::q
+    Start --> E["Keep updating<br/>without doing it by hand"]:::q
+    Start --> F["Ban IPs that keep<br/>failing SSH logins"]:::q
+    A --> S1(["Snapshot<br/>Step 2"]):::s
+    B --> S2(["ufw<br/>Step 5"]):::s
+    C --> S3(["SSH settings<br/>Step 7"]):::s
+    D --> S4(["Patching and reboot<br/>Steps 8 and 9"]):::s
+    E --> S5(["unattended-upgrades<br/>Step 11"]):::s
+    F --> S6(["fail2ban<br/>Step 12"]):::s
 
     classDef start fill:#943126,stroke:#571C16,stroke-width:3px,color:#FFFFFF,font-weight:bold
     classDef q fill:#1A5276,stroke:#0B2E43,stroke-width:3px,color:#FFFFFF,font-weight:bold
@@ -247,225 +245,232 @@ flowchart TD
 
 ---
 
-<a id="modules"></a>
-## 📸 Modules
+<a id="steps"></a>
+## 📸 Steps
 
-### Module 1 — Check the VM and take a snapshot
+### Step 1 — Check the VM in Azure
 
-The VM `lab-server` in the `sysadmin-labs` resource group: Linux (Ubuntu 24.04), Standard B2ls v2, India South Central, created 13/10/2026 11:48 UTC. Status was `Running`.
+The VM `lab-server` in the `sysadmin-labs` resource group: Linux (Ubuntu 24.04), Standard B2ls_v2, India South Central, created 13/10/2026 11:48 UTC. Status was `Running` when this screenshot was taken.
 
-![Azure VM overview](screenshots/Lab3-01-vm-overview.png)
+![Azure VM overview](screenshots/01-vm-running.png)
 
-The VM has one OS disk, 30 GiB Premium SSD LRS, and no data disks.
+### Step 2 — Take a snapshot before changing anything
 
-![VM disks](screenshots/Lab3-02-vm-disks.png)
+If SSH or the firewall locked me out, the snapshot is the way back. The VM has one OS disk (30 GiB, Premium SSD LRS) and no data disks.
 
-The disk detail page, where **Create snapshot** is available.
+![VM disks](screenshots/02-vm-disks.png)
 
-![OS disk detail](screenshots/Lab3-03-os-disk-detail.png)
+Opened the OS disk. The **Create snapshot** button is at the top.
 
-Snapshot `lab-server-before-lab3`: source type disk, incremental, `Standard_ZRS`. Validation passed.
+![OS disk page](screenshots/03-os-disk-page.png)
 
-![Snapshot validation](screenshots/Lab3-04-snapshot-validation.png)
+Snapshot form: name `lab-server-before-lab3`, type Incremental, storage type Standard_ZRS. Validation passed.
 
-The deployment finished: "Your deployment is complete".
+![Snapshot form](screenshots/04-snapshot-form.png)
 
-![Snapshot deployment complete](screenshots/Lab3-05-snapshot-deployment-complete.png)
+The deployment finished: `Your deployment is complete`.
 
-### Module 2 — Record the SSH settings before hardening
+![Snapshot created](screenshots/05-snapshot-created.png)
+
+### Step 3 — Record the SSH settings before the change
 
 ```bash
 sudo sshd -T | grep -E "passwordauthentication|permitrootlogin|pubkeyauthentication|port "
 ```
 
-Before any change: `port 22`, `permitrootlogin without-password`, `pubkeyauthentication yes`, `passwordauthentication no`. (`without-password` is the older name for "root can log in with a key only".) This is the "before" evidence.
+Before: port 22, `permitrootlogin without-password`, `pubkeyauthentication yes`, `passwordauthentication no`. Password login was already off, so I did not need to change it.
 
-![sshd settings before](screenshots/Lab3-06-sshd-before-hardening.png)
+![SSH settings before](screenshots/06-ssh-settings-before.png)
 
-### Module 3 — Set up the firewall with ufw
+### Step 4 — Open a second SSH window as a safety net
 
-SSH is allowed **before** the firewall is turned on, so the current session is not cut off.
-
-```bash
-sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw --force enable
-sudo ufw status verbose
-```
-
-Ports 22 and 80 allowed first:
-
-![ufw allow 22 and 80](screenshots/Lab3-07-ufw-allow-22-80.png)
-
-Then port 443:
-
-![ufw allow 443](screenshots/Lab3-08-ufw-allow-443.png)
-
-Firewall turned on: "Firewall is active and enabled on system startup".
-
-![ufw enabled](screenshots/Lab3-09-ufw-force-enable.png)
-
-`Status: active`, default `deny (incoming)` and `allow (outgoing)`, with `22/tcp`, `80/tcp` and `443/tcp` allowed for IPv4 and IPv6.
-
-![ufw status](screenshots/Lab3-10-ufw-status-verbose.png)
-
-> [!NOTE]
-> `ufw` runs on the VM. The Azure Network Security Group (NSG) is a separate firewall in front of the VM. A port has to be open in **both** to be reachable. The HTTPS page loading from my laptop in Module 4 shows port 443 is open in both.
-
-### Module 4 — Check the website through the firewall
-
-`https://<VM public IP>` from my laptop browser. Chrome shows `NET::ERR_CERT_AUTHORITY_INVALID` because the certificate is self-signed (from Lab 2).
-
-![Certificate warning](screenshots/Lab3-11-browser-cert-warning.png)
-
-After choosing Advanced and Proceed, the "Backup Lab" page loads with the firewall on.
-
-![HTTPS page loads](screenshots/Lab3-12-browser-https-backup-lab.png)
-
-### Module 5 — Harden the SSH settings
-
-A drop-in file in `/etc/ssh/sshd_config.d/` sets three options and keeps the main config file unchanged:
-
-```bash
-printf "PermitRootLogin no\nMaxAuthTries 3\nLoginGraceTime 30\n" | sudo tee /etc/ssh/sshd_config.d/01-hardening.conf
-```
-
-What each option does:
-
-- `PermitRootLogin no` blocks SSH login as `root`.
-- `MaxAuthTries 3` allows 3 failed attempts per connection before it is closed.
-- `LoginGraceTime 30` gives 30 seconds to log in before the connection is dropped.
-
-![Hardening file written](screenshots/Lab3-13-ssh-hardening-config-written.png)
-
-The config is tested **before** restarting. `sshd -t` printed nothing wrong and the `echo` printed `CONFIG OK`.
-
-```bash
-sudo sshd -t && echo CONFIG OK
-```
-
-![sshd config test](screenshots/Lab3-14-sshd-config-test-ok.png)
-
-### Module 6 — Restart SSH, test the login, confirm the settings
-
-```bash
-sudo systemctl restart ssh && echo SSH RESTARTED
-```
-
-First login test after the restart. It worked, but it was done in an Administrator PowerShell window with a double-pasted line above it, so I repeated it cleanly below.
-
-![First login test](screenshots/Lab3-15-first-key-login-test.png)
-
-Clean test from a normal PowerShell window on my laptop. The key login works after hardening ("Welcome to Ubuntu 24.04.4 LTS", 15:14 UTC).
+A second PowerShell window on my laptop, logged in to the VM with the key file. I kept it open while changing the firewall and SSH. The login banner shows `84 updates can be applied immediately` and `60 of these updates are standard security updates`.
 
 ```powershell
 ssh -i $HOME\Downloads\lab-server_key.pem azureuser@<VM public IP>
 ```
 
-![Login after restart](screenshots/Lab3-16-new-login-after-restart.png)
+![Second SSH window](screenshots/07-second-ssh-window.png)
 
-`sshd -T` shows what the server really uses. `permitrootlogin` changed from `without-password` to `no`; `maxauthtries 3` and `logingracetime 30` are new.
+### Step 5 — Turn on the firewall (ufw)
 
-![sshd settings after](screenshots/Lab3-17-sshd-hardening-after.png)
+I allowed SSH **first**, then HTTP and HTTPS, and only then turned the firewall on. ufw and the Azure network rules are two separate layers.
 
-| Setting | Before | After |
-|---|---|---|
-| `permitrootlogin` | `without-password` | `no` |
-| `maxauthtries` | not recorded in Module 2 | `3` |
-| `logingracetime` | not recorded in Module 2 | `30` |
-| `passwordauthentication` | `no` | `no` |
-| `pubkeyauthentication` | `yes` | `yes` |
+```bash
+sudo ufw allow 22/tcp
+```
 
-### Module 7 — Patch the server
+![ufw allow SSH](screenshots/08-ufw-allow-ssh.png)
 
-The login banner said **84 updates can be applied immediately** (60 of them security updates). First the list of pending updates:
+```bash
+sudo ufw allow 80/tcp
+```
+
+![ufw allow 80](screenshots/09-ufw-allow-80.png)
+
+```bash
+sudo ufw allow 443/tcp
+```
+
+![ufw allow 443](screenshots/10-ufw-allow-443.png)
+
+```bash
+sudo ufw --force enable
+```
+
+`Firewall is active and enabled on system startup`. My SSH window stayed connected.
+
+![ufw enabled](screenshots/11-ufw-enabled.png)
+
+```bash
+sudo ufw status verbose
+```
+
+`Status: active`, default `deny (incoming)` and `allow (outgoing)`. Ports 22, 80 and 443 are allowed for IPv4 and IPv6.
+
+![ufw status](screenshots/12-ufw-status.png)
+
+### Step 6 — Check that the website still works
+
+Opened `https://<VM public IP>` in my browser. Chrome shows the self-signed certificate warning from Lab 2, which means the connection reached Nginx on port 443.
+
+![Browser warning](screenshots/13-browser-warning-after-ufw.png)
+
+After choosing Advanced and Proceed, the page `Backup Lab` opens. The firewall did not block the website.
+
+![Website after ufw](screenshots/14-website-after-ufw.png)
+
+### Step 7 — Harden SSH
+
+I did not edit the main `sshd_config`. I added a separate settings file, so undoing the change means deleting one file and restarting SSH.
+
+```bash
+printf "PermitRootLogin no\nMaxAuthTries 3\nLoginGraceTime 30\n" | sudo tee /etc/ssh/sshd_config.d/01-hardening.conf
+```
+
+The file contains three lines: `PermitRootLogin no`, `MaxAuthTries 3`, `LoginGraceTime 30`.
+
+![SSH hardening file](screenshots/15-ssh-hardening-file.png)
+
+Tested the config before restarting. `CONFIG OK` means the syntax is valid.
+
+```bash
+sudo sshd -t && echo CONFIG OK
+```
+
+![sshd config test](screenshots/16-sshd-configtest.png)
+
+```bash
+sudo systemctl restart ssh && echo SSH RESTARTED
+```
+
+![SSH restarted](screenshots/17-ssh-restarted.png)
+
+After the restart I opened a **new** login from my laptop. It worked, so the new settings did not lock me out.
+
+![New login after restart](screenshots/18-new-login-after-restart.png)
+
+Checked the active settings:
+
+```bash
+sudo sshd -T | grep -E "^port |permitrootlogin|maxauthtries|logingracetime|passwordauthentication|pubkeyauthentication"
+```
+
+After: `permitrootlogin no`, `maxauthtries 3`, `logingracetime 30`, `pubkeyauthentication yes`, `passwordauthentication no`.
+
+![SSH settings after](screenshots/19-ssh-settings-after.png)
+
+### Step 8 — Install the updates
+
+Listed the first 20 pending updates:
 
 ```bash
 apt list --upgradable 2>/dev/null | head -20
 ```
 
-![Pending updates](screenshots/Lab3-18-pending-updates.png)
+![Pending updates](screenshots/20-updates-pending-list.png)
 
-Refresh the package list. It ends with **73 packages can be upgraded**. The number is lower than 84 because the list was refreshed.
+Refreshed the package lists. apt reported `73 packages can be upgraded` after the refresh (the login banner had shown 84 before it).
 
 ```bash
 sudo apt update
 ```
 
-![apt update](screenshots/Lab3-19-apt-update.png)
+![apt update](screenshots/21-apt-update.png)
 
-Install the updates:
+Installed the updates with `apt upgrade`. The end of the output says `Pending kernel upgrade!`: the running kernel is `6.17.0-1022-azure`, the new one is `7.0.0-1017-azure`, and a reboot is needed to load it. The tool also restarted several services (including `apache2`, `mysql`, `nginx` and `ssh`) and deferred a few system services until the reboot.
+
+![apt upgrade output](screenshots/22-apt-upgrade-kernel-pending.png)
+
+Checked the apt history log. The upgrade list includes `linux-image-azure` (6.17.0-1022 → 7.0.0-1017), and the run took from 15:27:26 to 15:28:22 UTC. The last command counts the lines of `apt list --upgradable`; `1` is only the `Listing...` header, so no package was left.
 
 ```bash
-sudo apt upgrade -y
+grep -E "^Start-Date|^End-Date|^Upgrade:" /var/log/apt/history.log | tail -3 | cut -c1-200
+apt list --upgradable 2>/dev/null | wc -l
 ```
 
-The apt log shows the run from 15:27:26 to 15:28:22 (about 1 minute). It included `linux-image-azure` (6.17.0-1022 → 7.0.0-1017), `dmidecode` and `libpolkit-agent-1-0`. Afterwards `apt list --upgradable | wc -l` printed `1`, which is only the "Listing..." line, so nothing was left pending.
+![apt history log](screenshots/23-apt-history-log.png)
 
-![apt upgrade](screenshots/Lab3-20-apt-upgrade.png)
-
-### Module 8 — Reboot into the new kernel
-
-After the upgrade, Ubuntu printed "Pending kernel upgrade": the new kernel was installed, but the old one was still running. I rebooted at 15:30 UTC and logged in again about 1 minute later.
+### Step 9 — Reboot and check the kernel
 
 ```bash
 sudo reboot
+```
+
+The reboot message says 15:30:29 UTC. I logged in again from my laptop and the banner time is 15:31:34 UTC, about one minute later. The banner now shows Ubuntu 24.04.5 LTS, kernel `7.0.0-1017-azure`, and `0 updates can be applied immediately`. `uname -r` confirms the kernel.
+
+```bash
 uname -r
 ```
 
-The banner says Ubuntu 24.04.5 LTS (GNU/Linux 7.0.0-1017-azure) and "0 updates can be applied immediately". `uname -r` returns `7.0.0-1017-azure`.
+> A typo (`sudo rebootsudo reboot`) came back with `command not found` and is visible in the screenshot. The second try worked.
 
-![After reboot](screenshots/Lab3-21-after-reboot-kernel.png)
+![Reboot and re-login](screenshots/24-reboot-and-relogin.png)
 
-### Module 9 — Check the firewall, services and website after patching
+### Step 10 — Check the firewall and services after the reboot
 
 ```bash
 sudo ufw status verbose
 systemctl is-active nginx apache2 mysql
 ```
 
-`ufw` is still `active` with the same 22, 80 and 443 rules, and Nginx, Apache and MySQL are all `active`.
+ufw is still active with the same six rules (22, 80, 443 for IPv4 and IPv6). Nginx, Apache and MySQL all return `active`.
 
-![ufw and services after patching](screenshots/Lab3-22-post-patch-ufw-services.png)
+![ufw and services after reboot](screenshots/25-ufw-and-services-after-reboot.png)
 
-The "Backup Lab" page still loads over HTTPS after the reboot.
+The website still opens over HTTPS after the reboot.
 
-![Website after patching](screenshots/Lab3-23-post-patch-website.png)
+![Website after reboot](screenshots/26-website-after-reboot.png)
 
-### Module 10 — Turn on automatic security updates
+### Step 11 — Turn on automatic updates
+
+`unattended-upgrades` was already installed (`2.9.1+nmu4ubuntu1`, no new install needed), and I ran the reconfigure step. Both install and reconfigure are in [`extra-not-for-readme/x06-unattended-upgrades-install-and-ssh-error.png`](extra-not-for-readme/x06-unattended-upgrades-install-and-ssh-error.png) and [`extra-not-for-readme/x07-unattended-upgrades-config-with-paste-errors.png`](extra-not-for-readme/x07-unattended-upgrades-config-with-paste-errors.png).
 
 ```bash
 sudo apt install -y unattended-upgrades
+sudo dpkg-reconfigure -f noninteractive unattended-upgrades
 ```
 
-The package was already installed (`2.9.1+nmu4ubuntu1`), so apt changed nothing: `0 newly installed`. (The `ssh` line and "Permission denied" below it come from a mistaken paste, see Challenges.)
-
-![unattended-upgrades install](screenshots/Lab3-24-unattended-install.png)
-
-Turn it on and check it:
+The config file has both lines set to `"1"`, and the service is `enabled` and `active`:
 
 ```bash
-sudo dpkg-reconfigure -f noninteractive unattended-upgrades
 cat /etc/apt/apt.conf.d/20auto-upgrades
 systemctl is-enabled unattended-upgrades
 systemctl is-active unattended-upgrades
-sudo unattended-upgrade --dry-run
+sudo unattended-upgrade --dry-run 2>&1 | tail -5
 ```
 
-The config file has `Update-Package-Lists "1"` and `Unattended-Upgrade "1"`. The service is `enabled` and `active`. The dry run printed nothing and no error, because no update was pending.
+The dry-run printed nothing in its last 5 lines, so I do not use it as proof (see Limitations).
 
-![unattended-upgrades enabled](screenshots/Lab3-25-unattended-enable-status.png)
+![unattended-upgrades status](screenshots/27-unattended-upgrades-status.png)
 
-### Module 11 — Install fail2ban and check the SSH jail
+### Step 12 — Install and check fail2ban
 
-```bash
-sudo apt install -y fail2ban
-```
+Installed fail2ban with apt. The install output ends cleanly (`No services need to be restarted`). It also printed Python `SyntaxWarning` lines from the package's own test files, which did not stop the install.
 
-`fail2ban 1.0.2-3ubuntu0.1` installed. The `SyntaxWarning: invalid escape sequence` lines come from fail2ban's own Python test files and did not stop the install.
+![fail2ban installed](screenshots/28-fail2ban-installed.png)
 
-![fail2ban install](screenshots/Lab3-26-fail2ban-install.png)
+Started it now and at every boot, then checked the service and the jail list:
 
 ```bash
 sudo systemctl enable --now fail2ban
@@ -473,17 +478,17 @@ systemctl is-active fail2ban
 sudo fail2ban-client status
 ```
 
-The service is `active`, with `Number of jail: 1` and `Jail list: sshd`.
+The service is `active` and there is 1 jail: `sshd`.
 
-![fail2ban status](screenshots/Lab3-27-fail2ban-status.png)
+![fail2ban enabled and status](screenshots/29-fail2ban-enabled-and-status.png)
 
 ```bash
 sudo fail2ban-client status sshd
 ```
 
-The `sshd` jail reads the `sshd` service log. At the time of the screenshot: `Currently failed: 1`, `Total failed: 6`, `Currently banned: 1`, `Total banned: 1`, banned IP `80.94.92.55`. That IP is not mine; fail2ban banned it on its own.
+The `sshd` jail shows 6 failed logins in total, 1 IP currently banned, 1 IP banned in total. I did not cause this ban.
 
-![fail2ban sshd jail](screenshots/Lab3-28-fail2ban-sshd-jail.png)
+![fail2ban sshd jail](screenshots/30-fail2ban-sshd-jail.png)
 
 ---
 
@@ -492,46 +497,53 @@ The `sshd` jail reads the `sshd` service log. At the time of the screenshot: `Cu
 
 | Check | Result |
 |---|---|
-| Snapshot | `lab-server-before-lab3` created, deployment complete |
-| Firewall | `ufw` active, 22, 80, 443 allowed (IPv4 and IPv6), default deny incoming |
-| SSH settings | `permitrootlogin no`, `maxauthtries 3`, `logingracetime 30` shown by `sshd -T` |
-| SSH login after hardening | Key login works from my laptop |
-| Pending updates | 84 at login → 73 after `apt update` → 0 after `apt upgrade` |
-| Kernel | `6.17.0-1022-azure` → `7.0.0-1017-azure` after reboot |
-| After patching | `ufw` active, Nginx, Apache and MySQL active, website loads |
-| Automatic updates | Config file set to `1` and `1`, service `enabled` and `active` |
-| fail2ban | Active, `sshd` jail, 1 IP banned (not mine) |
+| Snapshot | `lab-server-before-lab3` created (Incremental), deployment complete |
+| ufw | Active, default deny incoming, 22, 80, 443 allowed (IPv4 and IPv6) |
+| Website after ufw | `Backup Lab` page opens over HTTPS |
+| `PermitRootLogin` | `without-password` → `no` |
+| `MaxAuthTries` / `LoginGraceTime` | Set to `3` and `30` |
+| Password login | Already `no` before the lab, still `no` |
+| New SSH login after restart | Worked |
+| Pending updates | 84 in the login banner (60 security) → 0 after upgrade and reboot |
+| Kernel | `6.17.0-1022-azure` → `7.0.0-1017-azure` |
+| Reboot | 15:30:29 UTC → logged in again 15:31:34 UTC (about 1 min) |
+| After reboot | ufw active, Nginx, Apache, MySQL `active`, website opens |
+| Automatic updates | Service `enabled` and `active`, both config lines `"1"` |
+| fail2ban | `active`, 1 jail (`sshd`), 6 failed logins seen, 1 IP banned |
+
+> [!NOTE]
+> The reboot time includes my own typing and one typo. It only shows that this small VM came back quickly, not how a bigger server behaves.
 
 ---
 
 <a id="lockout"></a>
-## 🔍 Where a Lock-Out Can Happen
+## 🔍 Where a Lockout Can Happen
 
 ```mermaid
 flowchart LR
-    A["💻 My laptop<br/>SSH client + key"]:::a --> B["☁️ Azure NSG<br/>outer firewall"]:::b --> C["🧱 ufw<br/>firewall on the VM"]:::c --> D["🔑 sshd<br/>settings and keys"]:::d --> E["🖥 Server<br/>login works"]:::e
+    A["🌐 Internet<br/>any address"]:::a --> B["☁️ Azure network rules<br/>22, 80, 443 open"]:::b --> C["🔥 ufw<br/>22, 80, 443 allowed"]:::c --> D["🔐 sshd<br/>key only, no root, 3 tries"]:::d --> E["🚫 fail2ban<br/>bans repeated failures"]:::e
 
-    classDef a fill:#1A5276,stroke:#0B2E43,stroke-width:3px,color:#FFFFFF,font-weight:bold
-    classDef b fill:#76448A,stroke:#432752,stroke-width:3px,color:#FFFFFF,font-weight:bold
-    classDef c fill:#943126,stroke:#571C16,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef a fill:#943126,stroke:#571C16,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef b fill:#1A5276,stroke:#0B2E43,stroke-width:3px,color:#FFFFFF,font-weight:bold
+    classDef c fill:#76448A,stroke:#432752,stroke-width:3px,color:#FFFFFF,font-weight:bold
     classDef d fill:#B9770E,stroke:#6E4409,stroke-width:3px,color:#FFFFFF,font-weight:bold
     classDef e fill:#1E8449,stroke:#0E4A28,stroke-width:3px,color:#FFFFFF,font-weight:bold
 ```
 
-<p align="center"><em>A mistake in any box can block SSH. The red box (ufw) is the one that can lock me out right after it is turned on.</em></p>
+<p align="center"><em>The red box is the weak point: SSH is still open to any address. The other layers make that safer but do not close it.</em></p>
 
-### 🔍 Analyst Note — Why Every Change Is Followed by a Login Test
+### 🔍 Analyst Note — Why I Test the Config Before Restarting SSH
 
-An SSH setting that looks right in the file can still stop me from logging in. The safe order is: allow SSH, test the config, restart, and log in again from a new window.
+A typing mistake in the SSH config can lock me out. Testing first, and keeping a second window open, keeps the way back open.
 
 ```mermaid
 flowchart TD
-    A["🎯 Change made"]:::start --> B["🧪 Test the config<br/>sshd -t"]:::work
-    B -->|OK| C["🔁 Restart SSH"]:::work
-    B -->|Error| X["✏️ Fix the file<br/>do not restart"]:::bad
-    C --> D["💻 New login from the laptop"]:::work
+    A["🎯 Write the settings file"]:::start --> B["🧪 sshd -t<br/>is the syntax valid"]:::work
+    B -->|CONFIG OK| C["🔁 Restart ssh"]:::work
+    B -->|Error| X["🛠️ Fix or delete the file"]:::bad
+    C --> D["🔑 New login from the laptop"]:::work
     D -->|Works| E["✅ Change is safe"]:::good
-    D -->|Fails| F["🔎 Use the open session<br/>or the snapshot"]:::bad
+    D -->|Fails| F["🧯 Use the open window,<br/>or the snapshot"]:::bad
 
     classDef start fill:#e8f1fb,stroke:#005EB8,stroke-width:2px,color:#000
     classDef work fill:#fff4e5,stroke:#e08a00,stroke-width:2px,color:#000
@@ -544,19 +556,19 @@ flowchart TD
 <a id="pipeline"></a>
 ## 🧭 Hardening Method Pipeline
 
-How the lab turns a plain server into a patched, firewalled server with SSH protection
+How the lab turns a default server into a safer one, one change at a time
 
 ```mermaid
 flowchart TB
-    Snp["📸 SNAPSHOT<br/>Save the disk first"]:::symClass
-    Fw["🧱 FIREWALL<br/>ufw: 22, 80, 443"]:::isoClass
-    Ssh["🔑 SSH<br/>Stricter settings, login test"]:::decClass
-    Pat["🩹 PATCH<br/>apt upgrade and reboot"]:::fixClass
-    Chk["✅ RE-CHECK<br/>ufw, services, website"]:::verClass
-    Aut["🤖 AUTOMATE<br/>unattended-upgrades + fail2ban"]:::repClass
-    Doc["📝 DOCUMENT<br/>Commands, numbers, screenshots"]:::docClass
+    Pre["🧯 PREPARE<br/>Snapshot and second window"]:::symClass
+    Fw["🔥 FIREWALL<br/>ufw with 22, 80, 443"]:::isoClass
+    Ssh["🔐 HARDEN<br/>SSH settings, test, re-login"]:::decClass
+    Pat["📦 PATCH<br/>Update and reboot"]:::fixClass
+    Aut["⏰ AUTOMATE<br/>unattended-upgrades"]:::verClass
+    Ban["🚫 PROTECT<br/>fail2ban sshd jail"]:::repClass
+    Doc["📝 DOCUMENT<br/>Commands, results, screenshots"]:::docClass
 
-    Snp --> Fw --> Ssh --> Pat --> Chk --> Aut --> Doc
+    Pre --> Fw --> Ssh --> Pat --> Aut --> Ban --> Doc
 
     classDef symClass fill:#2C3E70,stroke:#131B3A,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
     classDef isoClass fill:#1A5276,stroke:#0B2E43,stroke-width:5px,color:#FFFFFF,font-weight:bold,font-size:16px
@@ -576,22 +588,21 @@ flowchart TB
 
 | Command | Purpose |
 |---------|---------|
-| `sudo ufw allow <port>/tcp` | Allow a TCP port through the firewall |
-| `sudo ufw --force enable` | Turn the firewall on without the confirmation question |
-| `sudo ufw status verbose` | Show firewall status, default policy and rules |
-| `sudo sshd -t && echo CONFIG OK` | Test the SSH config before restarting |
-| `sudo sshd -T \| grep -E "<options>"` | Show the SSH settings the server really uses |
-| `sudo systemctl restart ssh` | Apply SSH config changes |
-| `apt list --upgradable` | List packages with pending updates |
-| `sudo apt update` | Refresh the package list |
-| `sudo apt upgrade -y` | Install pending updates |
-| `sudo reboot` · `uname -r` | Restart, then check the running kernel |
+| `sudo sshd -T \| grep -E "permitrootlogin\|maxauthtries"` | Show the SSH settings that are really active |
+| `sudo sshd -t && echo CONFIG OK` | Test the SSH config before a restart |
+| `sudo systemctl restart ssh` | Apply SSH changes |
+| `sudo ufw allow 22/tcp` | Allow a port (do this for SSH before enabling ufw) |
+| `sudo ufw --force enable` | Turn the firewall on |
+| `sudo ufw status verbose` | Show the firewall state and rules |
+| `apt list --upgradable` | List pending updates |
+| `sudo apt update` | Refresh the package lists |
+| `sudo apt upgrade` | Install the pending updates |
+| `uname -r` | Show the running kernel |
+| `sudo reboot` | Restart the server (loads a new kernel) |
 | `systemctl is-active <service>` | Check that a service is running |
-| `sudo dpkg-reconfigure -f noninteractive unattended-upgrades` | Turn on automatic updates without questions |
-| `cat /etc/apt/apt.conf.d/20auto-upgrades` | Show the automatic update settings |
-| `sudo unattended-upgrade --dry-run` | Test automatic updates without installing |
-| `sudo systemctl enable --now fail2ban` | Start fail2ban now and at every boot |
-| `sudo fail2ban-client status [jail]` | List jails, or show one jail with banned IPs |
+| `systemctl is-enabled <service>` | Check that a service starts at boot |
+| `sudo dpkg-reconfigure -f noninteractive unattended-upgrades` | Turn on automatic updates |
+| `sudo fail2ban-client status sshd` | Show failed logins and banned IPs for SSH |
 
 ---
 
@@ -600,42 +611,41 @@ flowchart TB
 
 | ❌ Challenge | ✅ Solution |
 |---|---|
-| The login command printed `Identity file /home/azureuserDownloadslab-server_key.pem not accessible` and `Permission denied (publickey)` | I ran my laptop's `ssh -i $HOME\Downloads\...` command inside the Linux session. There it is the wrong path, and the VM does not have my key. Ran the login from a PowerShell prompt that starts with `PS C:\`, on the laptop |
-| `ssh: Could not resolve hostname ...105ssh: No such host is known` | The command was pasted twice in one line. Pasted it once |
-| `sudo rebootsudo reboot` returned `command not found` | The same double-paste mistake. Nothing broke; ran `sudo reboot` again |
-| `command not found` after I pasted the two lines of `20auto-upgrades` back into the terminal | Those lines are file content, not commands. The file was only read with `cat`, so it was not changed. Took a clean screenshot of the `cat` output |
-| `SyntaxWarning: invalid escape sequence` during the fail2ban install | These warnings come from fail2ban's own Python test files. The install finished and the service started |
+| My first login test returned `Permission denied (publickey)` and `Identity file ... not accessible` ([screenshot 1](extra-not-for-readme/x04-ssh-attempt-inside-vm-publickey-denied.png), [screenshot 2](extra-not-for-readme/x05-ssh-attempt-inside-vm-publickey-denied-2.png)) | I ran the `ssh` command inside the VM session. The key file is on my laptop, and `$HOME` inside the VM is a different folder. Opened a new PowerShell window on the laptop (prompt starting with `PS C:\`) and ran it there. One attempt also had the key name typed with `-` instead of `_` |
+| The same kind of attempt earlier, run inside the VM ([screenshot](extra-not-for-readme/x01-ssh-attempt-inside-vm-fingerprint.png)) | Same cause and same fix. It also added the VM to `known_hosts` on the VM, which does no harm |
+| Pasting the `ssh` command twice in one line gave `Could not resolve hostname` ([screenshot](extra-not-for-readme/x03-second-window-paste-error.png)) | Pasted it once, on its own line |
+| Config lines like `APT::Periodic::Unattended-Upgrade "1";` gave `command not found` ([screenshot](extra-not-for-readme/x07-unattended-upgrades-config-with-paste-errors.png)) | Those lines belong in a config file, not in the shell. Nothing broke. I read the real file with `cat /etc/apt/apt.conf.d/20auto-upgrades` |
+| `sudo rebootsudo reboot` gave `command not found` | Two commands were pasted together. Typed `sudo reboot` on its own |
+| fail2ban printed Python `SyntaxWarning` lines while installing | The warnings come from the package's own test files. The install finished and the service started, so I left it |
 
 ---
 
 <a id="scope-limitations"></a>
 ## 🚧 Scope & Limitations
 
-- **A password login being refused was not tested.** `sshd -T` shows `passwordauthentication no`, but it already said `no` in the Module 2 baseline, and I have no screenshot of a password attempt failing.
-- **I did not test a fail2ban ban myself.** The `sshd` jail shows 1 banned IP (`80.94.92.55`) that is not mine, so the ban works on real traffic. The jail totals are for all IPs, so I cannot say how many of the 6 failed attempts belong to that IP.
-- **Default fail2ban settings.** I did not set a custom ban time or retry count.
-- **Automatic updates were not seen installing anything.** The dry run was empty because no update was pending after patching, and I did not wait for the daily timer.
-- **SSH is open to the whole internet.** `ufw` allows port 22 from anywhere (the `Anywhere` rows). I did not limit it to my own IP or use `ufw limit`.
-- **The Azure NSG rules were not reviewed in this lab.** I only showed that 443 reaches the VM, because the page loads.
-- **The snapshot was never restored.** I took it as a safety net but did not test going back to it.
-- **Only part of the update list was captured.** The screenshot shows the first 20 of 84 pending updates. I did not review each package.
-- **Not done:** the firmware upgrade and the move to the next Ubuntu release (`26.04.1 LTS`), both offered in the login banner.
-- **The HTTPS certificate is self-signed,** so the browser shows a warning (Lab 2).
-- **Small lab server.** One VM with one user, so this does not show how to manage many servers.
+- **SSH is still open to any address.** ufw allows port 22 from `Anywhere`, and the Azure rule for SSH (checked in Lab 2, not changed here) also has Any as the source.
+- **Root login and login limits were not tested by trying them.** I checked the active settings with `sshd -T`, but I did not try to log in as root or fail logins three times in one connection.
+- **The ufw block was not tested.** I confirmed the allow rules and that the website still opens. I did not test that a closed port is refused.
+- **The snapshot was not restored.** It exists as a way back, but I never used it.
+- **The automatic update run was not observed.** The service is enabled and active, but the dry-run printed no visible output, and I did not wait for a real run. I only read `20auto-upgrades`, not which update sources it uses.
+- **fail2ban runs with its package settings.** I did not change ban time or retry count. I did not trigger a ban myself: the ban shown came from another IP, and I did not test unbanning or what happens if my own IP gets banned.
+- **Only package updates were installed.** I stayed on Ubuntu 24.04 (no release upgrade) and Expanded Security Maintenance is not enabled.
+- **The after-reboot check is basic.** Nginx, Apache and MySQL are `active` and the page opens, but I did not run a deeper test of the database or applications.
+- **Times are from the VM clock (UTC).**
 
 ---
 
 <a id="what-i-learned"></a>
 ## 🧠 What I Learned
 
-- **Allow SSH before you turn the firewall on.** The rule order matters; otherwise the firewall can lock me out.
-- **`sshd -t` before restart, a new login after.** The config test catches typos, and only a new login proves access still works.
-- **`sshd -T` shows the real settings.** It is better evidence than reading the config file.
-- **`ufw` and the Azure NSG are two separate firewalls.** A port needs to be open in both.
-- **Installing a kernel update is not enough.** The old kernel keeps running until a reboot, and `uname -r` shows which one is live.
-- **Check the services after patching.** A restart of Nginx, Apache and MySQL happened during the upgrade, so I confirmed the website still loaded.
-- **Real scanners find a public SSH port fast.** fail2ban banned an outside IP during the lab.
-- **Keep the evidence, including my mistakes.** A wrong paste is easy to explain when it is documented.
+- **Have a way back before changing access.** The snapshot and the second SSH window cost a few minutes and removed most of the lockout risk.
+- **Allow SSH in ufw before turning it on.** Then check that the website still works.
+- **ufw and the Azure network rules are separate layers.** Both must allow a port for traffic to arrive.
+- **Test the SSH config, restart, then log in again from a fresh window.** `sshd -t` catches typing mistakes, and a new login proves the change is safe.
+- **A new kernel only runs after a reboot.** The update said `Pending kernel upgrade!`, and `uname -r` showed the new kernel only afterwards.
+- **A public server gets failed SSH logins quickly.** fail2ban had already banned one IP that I did not cause.
+- **Run each command in the right terminal.** Several of my mistakes came from running a laptop command inside the VM.
+- **Keep the evidence, including the mistakes.** The screenshots show what happened and when.
 
 ---
 
@@ -643,14 +653,14 @@ flowchart TB
 ## 🛠️ Skills Demonstrated
 
 - Taking an Azure disk snapshot before risky changes
-- Configuring a `ufw` firewall without cutting off SSH
-- Hardening `sshd` with a drop-in config and verifying it with `sshd -T`
-- Testing SSH access from a second session after each change
-- Patching Ubuntu with `apt`, rebooting, and confirming the kernel
-- Re-checking services and a website after maintenance
-- Enabling automatic security updates
-- Installing and checking `fail2ban` for SSH
-- Documenting a lab with commands, numbers, screenshots and honest limits
+- Managing a host firewall with ufw
+- Hardening SSH with a separate settings file and checking the active settings
+- Avoiding a lockout with a second session and a config test
+- Installing updates with apt and moving to a new kernel with a reboot
+- Checking services and the website after a reboot
+- Turning on automatic updates with unattended-upgrades
+- Setting up fail2ban and reading its jail status
+- Documenting a lab with commands, times, screenshots and honest limits
 
 ---
 
@@ -660,34 +670,43 @@ flowchart TB
 ```text
 lab03-ssh-firewall-patching/
 |-- README.md
-|-- INDEX.md
-`-- screenshots/
-    |-- Lab3-01-vm-overview.png
-    |-- Lab3-02-vm-disks.png
-    |-- Lab3-03-os-disk-detail.png
-    |-- Lab3-04-snapshot-validation.png
-    |-- Lab3-05-snapshot-deployment-complete.png
-    |-- Lab3-06-sshd-before-hardening.png
-    |-- Lab3-07-ufw-allow-22-80.png
-    |-- Lab3-08-ufw-allow-443.png
-    |-- Lab3-09-ufw-force-enable.png
-    |-- Lab3-10-ufw-status-verbose.png
-    |-- Lab3-11-browser-cert-warning.png
-    |-- Lab3-12-browser-https-backup-lab.png
-    |-- Lab3-13-ssh-hardening-config-written.png
-    |-- Lab3-14-sshd-config-test-ok.png
-    |-- Lab3-15-first-key-login-test.png
-    |-- Lab3-16-new-login-after-restart.png
-    |-- Lab3-17-sshd-hardening-after.png
-    |-- Lab3-18-pending-updates.png
-    |-- Lab3-19-apt-update.png
-    |-- Lab3-20-apt-upgrade.png
-    |-- Lab3-21-after-reboot-kernel.png
-    |-- Lab3-22-post-patch-ufw-services.png
-    |-- Lab3-23-post-patch-website.png
-    |-- Lab3-24-unattended-install.png
-    |-- Lab3-25-unattended-enable-status.png
-    |-- Lab3-26-fail2ban-install.png
-    |-- Lab3-27-fail2ban-status.png
-    `-- Lab3-28-fail2ban-sshd-jail.png
+|-- screenshots/
+|   |-- 01-vm-running.png
+|   |-- 02-vm-disks.png
+|   |-- 03-os-disk-page.png
+|   |-- 04-snapshot-form.png
+|   |-- 05-snapshot-created.png
+|   |-- 06-ssh-settings-before.png
+|   |-- 07-second-ssh-window.png
+|   |-- 08-ufw-allow-ssh.png
+|   |-- 09-ufw-allow-80.png
+|   |-- 10-ufw-allow-443.png
+|   |-- 11-ufw-enabled.png
+|   |-- 12-ufw-status.png
+|   |-- 13-browser-warning-after-ufw.png
+|   |-- 14-website-after-ufw.png
+|   |-- 15-ssh-hardening-file.png
+|   |-- 16-sshd-configtest.png
+|   |-- 17-ssh-restarted.png
+|   |-- 18-new-login-after-restart.png
+|   |-- 19-ssh-settings-after.png
+|   |-- 20-updates-pending-list.png
+|   |-- 21-apt-update.png
+|   |-- 22-apt-upgrade-kernel-pending.png
+|   |-- 23-apt-history-log.png
+|   |-- 24-reboot-and-relogin.png
+|   |-- 25-ufw-and-services-after-reboot.png
+|   |-- 26-website-after-reboot.png
+|   |-- 27-unattended-upgrades-status.png
+|   |-- 28-fail2ban-installed.png
+|   |-- 29-fail2ban-enabled-and-status.png
+|   `-- 30-fail2ban-sshd-jail.png
+`-- extra-not-for-readme/
+    |-- x01-ssh-attempt-inside-vm-fingerprint.png
+    |-- x02-ssh-attempt-inside-vm-and-settings.png
+    |-- x03-second-window-paste-error.png
+    |-- x04-ssh-attempt-inside-vm-publickey-denied.png
+    |-- x05-ssh-attempt-inside-vm-publickey-denied-2.png
+    |-- x06-unattended-upgrades-install-and-ssh-error.png
+    `-- x07-unattended-upgrades-config-with-paste-errors.png
 ```
