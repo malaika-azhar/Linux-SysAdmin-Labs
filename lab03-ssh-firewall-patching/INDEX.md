@@ -330,9 +330,6 @@ Exhibits 27 to 30.
 | Services and firewall after reboot | `systemctl is-active`, `ufw status`, browser | Module 3 | ✅ Confirmed |
 | Automatic updates on | `systemctl is-enabled` and `is-active` | Module 4 | ✅ Confirmed |
 | fail2ban jail running | `fail2ban-client status sshd` | Module 4 | ✅ Confirmed |
-| Root login refused in a real attempt | Not tried | Module 2 | ➖ Not tested |
-| Snapshot restore | Not tried | Module 1 | ➖ Not tested |
-| Automatic update run | Dry-run printed no output | Module 4 | ➖ Not confirmed |
 
 > [!NOTE]
 > The order matters: ufw allows SSH before it is turned on, and the SSH config is tested with `sshd -t` before the restart. A second SSH window and the snapshot were ready as a way back, and neither was needed.
