@@ -17,7 +17,7 @@ A hands-on Linux sysadmin lab. I took a snapshot of the VM, turned on the ufw fi
 
 The method: take a snapshot, keep a second SSH window open, change one thing at a time, test it, and keep the evidence.
 
-### [📸 Jump to the steps](#steps)
+### [📑 Open the Index](INDEX.md) &nbsp;·&nbsp; [📸 Jump to the steps](#steps)
 
 </div>
 
@@ -702,3 +702,11 @@ lab03-ssh-firewall-patching/
     |-- x06-unattended-upgrades-install-and-ssh-error.png
     `-- x07-unattended-upgrades-config-with-paste-errors.png
 ```
+
+---
+
+<div align="center">
+
+[⬆️ Back to top](#) &nbsp;·&nbsp; [📑 Index](INDEX.md)
+
+</div>
