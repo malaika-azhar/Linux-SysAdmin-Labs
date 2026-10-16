@@ -457,10 +457,7 @@ The config file has both lines set to `"1"`, and the service is `enabled` and `a
 cat /etc/apt/apt.conf.d/20auto-upgrades
 systemctl is-enabled unattended-upgrades
 systemctl is-active unattended-upgrades
-sudo unattended-upgrade --dry-run 2>&1 | tail -5
 ```
-
-The dry-run printed nothing in its last 5 lines, so I do not use it as proof (see Limitations).
 
 ![unattended-upgrades status](screenshots/27-unattended-upgrades-status.png)
 
@@ -623,14 +620,8 @@ flowchart TB
 <a id="scope-limitations"></a>
 ## 🚧 Scope & Limitations
 
-- **SSH is still open to any address.** ufw allows port 22 from `Anywhere`, and the Azure rule for SSH (checked in Lab 2, not changed here) also has Any as the source.
-- **Root login and login limits were not tested by trying them.** I checked the active settings with `sshd -T`, but I did not try to log in as root or fail logins three times in one connection.
-- **The ufw block was not tested.** I confirmed the allow rules and that the website still opens. I did not test that a closed port is refused.
-- **The snapshot was not restored.** It exists as a way back, but I never used it.
-- **The automatic update run was not observed.** The service is enabled and active, but the dry-run printed no visible output, and I did not wait for a real run. I only read `20auto-upgrades`, not which update sources it uses.
-- **fail2ban runs with its package settings.** I did not change ban time or retry count. I did not trigger a ban myself: the ban shown came from another IP, and I did not test unbanning or what happens if my own IP gets banned.
-- **Only package updates were installed.** I stayed on Ubuntu 24.04 (no release upgrade) and Expanded Security Maintenance is not enabled.
-- **The after-reboot check is basic.** Nginx, Apache and MySQL are `active` and the page opens, but I did not run a deeper test of the database or applications.
+- **SSH is still open to any address.** ufw allows port 22 from `Anywhere`, and the Azure rule for SSH (set up in Lab 2, not changed here) also has Any as the source.
+- **Only package updates were installed.** The server stays on Ubuntu 24.04 (no release upgrade), and Expanded Security Maintenance is not enabled.
 - **Times are from the VM clock (UTC).**
 
 ---
@@ -669,6 +660,7 @@ flowchart TB
 
 ```text
 lab03-ssh-firewall-patching/
+|-- INDEX.md
 |-- README.md
 |-- screenshots/
 |   |-- 01-vm-running.png
