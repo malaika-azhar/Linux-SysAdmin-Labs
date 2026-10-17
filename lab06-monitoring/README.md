@@ -17,7 +17,7 @@ A hands-on Linux sysadmin lab. I wrote a script that warns when the disk is near
 
 The method: write a check, test that it fires, schedule it, add a service monitor, break the service on purpose, and keep the evidence.
 
-### [📸 Jump to the steps](#steps)
+### [🗂️ Open the INDEX](INDEX.md) &nbsp;·&nbsp; [📸 Jump to the steps](#steps)
 
 </div>
 
@@ -25,6 +25,7 @@ The method: write a check, test that it fires, schedule it, add a service monito
 
 ## 📑 Table of Contents
 
+0. [🗂️ INDEX (step and screenshot guide)](INDEX.md)
 1. [At a Glance](#at-a-glance)
 2. [Objective](#objective)
 3. [Environment](#environment)
