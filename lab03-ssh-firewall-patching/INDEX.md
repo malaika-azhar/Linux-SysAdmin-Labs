@@ -301,7 +301,7 @@ Exhibits 27 to 30.
 
 ---
 
-## 📝 Outcome
+## 📝 Verdict
 
 **Complete** — firewall on, SSH tightened, server patched and rebooted into the new kernel, automatic updates and fail2ban running, and the website still works.
 
