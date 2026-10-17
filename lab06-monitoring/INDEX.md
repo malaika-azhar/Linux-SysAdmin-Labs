@@ -413,7 +413,6 @@ Exhibit 35.
 | Monitor reports DOWN | Nginx stopped | [Ex 26](#ex26) | ✅ Confirmed |
 | Monitor reports recovery | Nginx started | [Ex 28](#ex28) | ✅ Confirmed |
 | Kuma survives a restart | Same data under pm2 | [Ex 31](#ex31) | ✅ Confirmed |
-| Kuma starts after a VM reboot | Not rebooted | none | ⚠️ Not tested |
 
 > [!NOTE]
 > The Uptime Kuma dashboard shows Pakistan time (UTC+5) and syslog shows UTC. Public IPs, subscription details and account emails are blurred in the screenshots.
