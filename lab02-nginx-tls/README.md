@@ -16,7 +16,7 @@ A hands-on Linux sysadmin lab. I moved Apache to port 8080, put Nginx in front o
 
 The method: move the backend, put the proxy in front, add TLS, test every layer, and keep the evidence.
 
-### [📸 Jump to the steps](#steps)
+### [📸 Jump to the steps](#steps) &nbsp;·&nbsp; [📑 Open the Index](INDEX.md)
 
 </div>
 
