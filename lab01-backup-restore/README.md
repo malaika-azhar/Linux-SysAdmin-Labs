@@ -16,7 +16,7 @@ A hands-on Linux sysadmin lab. I backed up a web page and a database with a scri
 
 The method: set up test data, back it up, verify the backup, break the system, restore it, and keep the evidence.
 
-### [Open the INDEX](INDEX.md) &nbsp;·&nbsp; [📸 Jump to the steps](#steps)
+### [📚 Open the INDEX](INDEX.md) &nbsp;·&nbsp; [📸 Jump to the steps](#steps)
 
 </div>
 
