@@ -16,7 +16,7 @@ A hands-on Linux sysadmin lab. I created a test user, `intern1` (a made-up accou
 
 The method: record the starting state, create the user, take access away in a safe order, keep the data, remove the account, and keep the evidence.
 
-### [📸 Jump to the steps](#steps)
+### [🗂️ Open the INDEX](INDEX.md) &nbsp;·&nbsp; [📸 Jump to the steps](#steps)
 
 </div>
 
