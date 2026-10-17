@@ -16,7 +16,7 @@ A hands-on Linux sysadmin lab. I installed BIND9 on an Ubuntu VM, wrote a zone f
 
 The method: check the port, install the server, write the zone, validate the files, restart, and test every record.
 
-### [📸 Jump to the steps](#steps)
+### [🗂️ Open the INDEX](INDEX.md) &nbsp;·&nbsp; [📸 Jump to the steps](#steps)
 
 </div>
 
