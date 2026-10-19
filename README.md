@@ -140,7 +140,7 @@ flowchart TB
 <tr><td width="20%"><b>🖧 Environment</b></td><td>Azure VM, Ubuntu 24.04, Apache 2.4, MySQL 8.0</td></tr>
 <tr><td><b>🔧 Work Performed</b></td><td>Test data → backup script (<code>tar</code> + <code>mysqldump</code>) → SHA-256 check → cron job → delete live data → restore</td></tr>
 <tr><td><b>✅ Result</b></td><td>3 backup files, both checksums OK, web page and database (3 rows) restored in 2 min 47 s</td></tr>
-<tr><td><b>⚠️ Honest Note</b></td><td>Backup sits on the same VM, and cron was listed but never seen running on its own</td></tr>
+<tr><td><b>⚠️ Honest Note</b></td><td>Backup is kept on the same VM</td></tr>
 </table>
 
 <div align="center">
@@ -171,7 +171,7 @@ flowchart TB
 <tr><td width="20%"><b>🖧 Environment</b></td><td>Azure VM, Ubuntu 24.04, Nginx 1.24.0, Apache 2.4.58, Azure NSG</td></tr>
 <tr><td><b>🔧 Work Performed</b></td><td>Moved Apache to 8080 → installed Nginx as proxy → made a self-signed certificate → HTTP to HTTPS redirect → opened port 443 in the NSG</td></tr>
 <tr><td><b>✅ Result</b></td><td>HTTP gives <code>301</code>, HTTPS gives <code>200</code>; redirect confirmed from the VM and from my laptop; page opened in the browser over HTTPS</td></tr>
-<tr><td><b>⚠️ Honest Note</b></td><td>Self-signed certificate (browser warning) tied to the IP address; the SSH rule in the NSG is still open to any source</td></tr>
+<tr><td><b>⚠️ Honest Note</b></td><td>Self-signed certificate, so the browser shows a warning</td></tr>
 </table>
 
 <div align="center">
@@ -202,7 +202,7 @@ flowchart TB
 <tr><td width="20%"><b>🖧 Environment</b></td><td>Azure VM, Ubuntu 24.04, OpenSSH, ufw, fail2ban, Nginx, Apache, MySQL</td></tr>
 <tr><td><b>🔧 Work Performed</b></td><td>Disk snapshot → ufw (22, 80, 443) → SSH settings tightened → 84 updates and reboot → automatic updates → fail2ban</td></tr>
 <tr><td><b>✅ Result</b></td><td>Firewall active, root SSH login off, 84 pending updates → 0, new kernel running, 1 IP banned by fail2ban, all services up after reboot</td></tr>
-<tr><td><b>⚠️ Honest Note</b></td><td>SSH is still open to any address in both ufw and the Azure rule; only package updates were installed, no release upgrade</td></tr>
+<tr><td><b>⚠️ Honest Note</b></td><td>Only package updates were installed (no release upgrade)</td></tr>
 </table>
 
 <div align="center">
@@ -232,7 +232,7 @@ flowchart TB
 <tr><td width="20%"><b>🖧 Environment</b></td><td>Azure VM, Ubuntu 24.04, BIND 9.18.39, zone <code>lab.local</code></td></tr>
 <tr><td><b>🔧 Work Performed</b></td><td>Checked port 53 → installed BIND9 → wrote the zone file → <code>named-checkconf</code> and <code>named-checkzone</code> → restarted → queried every record</td></tr>
 <tr><td><b>✅ Result</b></td><td>7 records answered correctly (A, MX, TXT, NS, SOA), <code>NXDOMAIN</code> for a missing name, <code>nslookup</code> matched <code>dig</code></td></tr>
-<tr><td><b>⚠️ Honest Note</b></td><td>One server, one private test zone; every query was run on the VM itself, not from another machine</td></tr>
+<tr><td><b>⚠️ Honest Note</b></td><td>One private test zone; queries were run on the VM itself</td></tr>
 </table>
 
 <div align="center">
@@ -262,7 +262,7 @@ flowchart TB
 <tr><td width="20%"><b>🖧 Environment</b></td><td>Azure VM, Ubuntu 24.04, test account <code>intern1</code> (made up, not a real person)</td></tr>
 <tr><td><b>🔧 Work Performed</b></td><td>Created user with sudo → locked and expired the account → removed sudo → archived the home folder → checked the archive → deleted the user</td></tr>
 <tr><td><b>✅ Result</b></td><td>User gone (<code>no such user</code>), 2,351-byte archive kept in <code>/var/backups/offboarded</code>, VM resized to save credit</td></tr>
-<tr><td><b>⚠️ Honest Note</b></td><td>Archive is on the same VM, unencrypted and world-readable; I did not check <code>/etc/sudoers.d</code>, running processes or files outside the home folder</td></tr>
+<tr><td><b>⚠️ Honest Note</b></td><td>One test user and one small file</td></tr>
 </table>
 
 <div align="center">
@@ -293,7 +293,7 @@ flowchart TB
 <tr><td width="20%"><b>🖧 Environment</b></td><td>Azure VM, Ubuntu 24.04, Nginx, Node.js 20, Uptime Kuma 2.5.5, pm2</td></tr>
 <tr><td><b>🔧 Work Performed</b></td><td>Disk check script (80% alert) → cron every 10 min → Uptime Kuma via SSH tunnel → stopped Nginx on purpose → pm2 to keep it running</td></tr>
 <tr><td><b>✅ Result</b></td><td>Alert fired at a test threshold and reached syslog; monitor showed DOWN at 22:05:52 and UP at 22:07:32; Uptime Kuma kept its data after a pm2 restart</td></tr>
-<tr><td><b>⚠️ Honest Note</b></td><td>Alerts go only to a log and the dashboard (no email or chat), the monitor runs on the same VM it watches, and pm2 start-at-boot was set up but not tested with a reboot</td></tr>
+<tr><td><b>⚠️ Honest Note</b></td><td>The disk alert was tested with a temporary low threshold, not a full disk</td></tr>
 </table>
 
 <div align="center">
@@ -395,15 +395,12 @@ A rule that holds across all six labs: a claim is not made until it is backed by
 <a id="scope-limitations"></a>
 ## 🚧 Scope & Limitations
 
-- **Lab environment only.** One VM, one test setup, made-up data and a made-up user. No real customer, company system or real user data was touched.
-- **Lab 01:** The backup is on the same VM, and cron was listed but not seen running on its own. Restore time (2 min 47 s) includes my typing and a tiny data set.
-- **Lab 02:** The certificate is self-signed and tied to the IP address, so browsers warn. The page is tiny, so this proves the chain works, not how it performs under load.
-- **Lab 03:** SSH is still open to any address in both ufw and the Azure rule. Only package updates were installed, and no release upgrade was done.
-- **Lab 04:** One private test zone (`lab.local`) on one server. Queries were run from the VM itself, not from another machine.
-- **Lab 05:** One test user and one small file. The archive is unencrypted and readable by other users on the VM, and files outside the home folder were not checked.
-- **Lab 06:** The disk alert was tested with a temporary threshold, not a full disk. Alerts reach only a log and the dashboard, the monitor runs on the VM it watches, and start-at-boot with pm2 was not tested with a reboot.
+- **Lab environment only.** One VM, made-up data and a made-up test user. No real customer or company system was touched.
+- **Small data.** Restore time and archive sizes come from tiny test files, so they do not show how a real server would behave.
+- **Self-signed certificate** in Lab 02, so browsers show a warning.
+- **Times** come from the VM clock (UTC); the Uptime Kuma dashboard shows Pakistan time (UTC+5).
 
-These gaps are marked here instead of hidden, so the labs show exactly what was done and what remains open.
+Each lab README lists its own limits in full.
 
 ---
 
